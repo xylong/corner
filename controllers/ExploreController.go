@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"corner/models"
+	"corner/utils"
 	"github.com/astaxie/beego"
+	"math"
+	"strconv"
 )
 
 type ExploreController struct {
@@ -24,4 +27,22 @@ func (e *ExploreController) Index() {
 
 	pageIndex, _ := e.GetInt("page", 1)
 	pageSize := 24
+
+	books, totalCount, err := models.NewBook().HomeData(pageIndex, pageSize, cid)
+	if err != nil {
+		beego.Error(err)
+		e.Abort("404")
+	}
+	if totalCount > 0 {
+		urlSuffix := ""
+		if cid > 0 {
+			urlSuffix = urlSuffix + "&cid=" + strconv.Itoa(cid)
+		}
+		html := utils.NewPaginations(4, totalCount, pageSize, pageIndex, urlPrefix, urlSuffix)
+		e.Data["PageHtml"] = html
+	} else {
+		e.Data["PageHtml"] = ""
+	}
+	e.Data["TotalPages"] = int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	e.Data["list"] = books
 }
