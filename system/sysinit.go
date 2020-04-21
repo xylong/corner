@@ -1,6 +1,8 @@
 package system
 
 import (
+	"corner/models"
+	"corner/utils"
 	"github.com/astaxie/beego"
 	"path/filepath"
 	"strings"
@@ -36,4 +38,9 @@ func registerFunctions() {
 		}
 		return cdn + p
 	})
+	beego.AddFuncMap("showImg", utils.ShowImg)
+	beego.AddFuncMap("IsFollow", new(models.Fans).Relation)
+	beego.AddFuncMap("isubstr", utils.Substr)
+	beego.AddFuncMap("inMap", utils.InMap)
+
 }

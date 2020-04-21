@@ -2,9 +2,76 @@ package utils
 
 import (
 	"fmt"
+	"github.com/astaxie/beego"
 	"html/template"
 	"strings"
 )
+
+const (
+	Version           = "1.0"
+	StoreLocal string = "local"
+	StoreOss   string = "oss"
+)
+
+var (
+	//BasePath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+	StoreType = beego.AppConfig.String("store_type") //存储类型
+)
+
+func ShowImg(img string, style ...string) (url string) {
+	if strings.HasPrefix(img, "https://") || strings.HasPrefix(img, "http://") {
+		return img
+	}
+	img = "/" + strings.TrimLeft(img, "./")
+	switch StoreType {
+	case StoreOss:
+		s := ""
+		if len(style) > 0 && strings.TrimSpace(style[0]) != "" {
+			s = "/" + style[0]
+		}
+		url = strings.TrimRight(beego.AppConfig.String("oss::Domain"), "/ ") + img + s
+	case StoreLocal:
+		url = img
+	}
+	fmt.Println(img)
+	fmt.Println(url)
+	return url
+}
+
+func ScoreFloat(score int) string {
+	return fmt.Sprintf("%1.1f", float32(score)/10.0)
+}
+
+func Substr(s string, length int) string {
+	bt := []rune(s)
+	start := 0
+	dot := false
+
+	if start > len(bt) {
+		start = start % len(bt)
+	}
+	var end int
+	if (start + length) > (len(bt) - 1) {
+		end = len(bt)
+	} else {
+		end = start + length
+		dot = true
+	}
+
+	str := string(bt[start:end])
+	if dot {
+		str = str + "..."
+	}
+	return str
+}
+
+//判断数据是否在map中
+func InMap(maps map[int]bool, key int) (ret bool) {
+	if _, ok := maps[key]; ok {
+		return true
+	}
+	return
+}
 
 func NewPaginations(rollPage, totalRows, listRows, currentPage int, urlPrefix string, urlSuffix string, urlParams ...interface{}) template.HTML {
 	var (
